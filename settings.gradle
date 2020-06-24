@@ -1,0 +1,2 @@
+include ':RatingView'
+rootProject.name = "RatingViewExample"
