@@ -3,7 +3,6 @@
 
 RatingView shows ratings count for any item.
 
-
 ### Steps I followed to publish this library to Bintray:
 
 - Added properties into local.properties
