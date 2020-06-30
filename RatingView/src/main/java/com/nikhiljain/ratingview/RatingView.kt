@@ -4,18 +4,66 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.Gravity
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.annotation.ColorInt
-import androidx.annotation.ColorRes
-import androidx.annotation.Dimension
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.cardview.widget.CardView
 
-class RatingView : AppCompatTextView {
+class RatingView : CardView {
+    private val cardDefaultColor = Color.parseColor("#388E3C")
+
+    private val ratingTextView = AppCompatTextView(this.context).apply {
+        layoutParams = LayoutParams(
+            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
+        ).also {
+            it.marginEnd = resources.getDimensionPixelSize(
+                R.dimen.rating_view_padding
+            )
+        }
+    }.also {
+        it.setTextColor(Color.WHITE)
+        it.setTextSize(
+            TypedValue.COMPLEX_UNIT_PX,
+            resources.getDimension(R.dimen.rating_text_default_size)
+        )
+    }
+
+    private val ratingImageView = ImageView(this.context).apply {
+        val imageSize = resources.getDimension(R.dimen.rating_image_default_size)
+        layoutParams = LayoutParams(
+            imageSize.toInt(), LayoutParams.WRAP_CONTENT
+        )
+        this.imageTintList = ColorStateList.valueOf(Color.WHITE)
+    }.also {
+        it.setImageDrawable(
+            context.getDrawable(R.drawable.ic_star)
+        )
+    }
+
+    private val childLayout = LinearLayout(this.context).apply {
+        layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT
+        )
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+    }.also {
+        val padding = resources.getDimensionPixelSize(R.dimen.padding_small)
+        it.contentDescription = context.getString(R.string.rating_stars)
+        it.setPadding(padding, 0, padding, 0)
+        it.addView(ratingTextView)
+        it.addView(ratingImageView)
+    }
+
     constructor(context: Context) : super(context) {
-        initRatingView()
+        initRatingLayout()
     }
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        initRatingView(attrs)
+        initRatingLayout(attrs)
     }
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
@@ -23,61 +71,43 @@ class RatingView : AppCompatTextView {
         attrs,
         defStyleAttr
     ) {
-        initRatingView(attrs)
+        initRatingLayout(attrs)
     }
 
-    private fun initRatingView(attributeSet: AttributeSet? = null) {
+    private fun initRatingLayout(attributeSet: AttributeSet? = null) {
+        setCardBackgroundColor(cardDefaultColor)
+        addView(childLayout)
         attributeSet?.let {
-            val obtainStyledAttributes =
-                context.theme.obtainStyledAttributes(
-                    it, R.styleable.RatingView, 0, 0
-                )
-
+            val attributesArray = context.theme.obtainStyledAttributes(
+                it,
+                R.styleable.RatingView,
+                0, 0
+            )
             val ratingValue: Float
-            @ColorRes val tintColor: Int
-            @Dimension(unit = Dimension.DP) val viewSize: Int
-            val defaultValue = resources.getDimensionPixelSize(R.dimen.rating_content_size)
+            val tintColor: Int
             try {
-                ratingValue =
-                    obtainStyledAttributes.getFloat(
-                        R.styleable.RatingView_rating_value, 0.0F
-                    )
-                tintColor = obtainStyledAttributes.getColor(
-                    R.styleable.RatingView_tintColor,
-                    Color.WHITE
+                ratingValue = attributesArray.getFloat(
+                    R.styleable.RatingView_rating_value,
+                    0.0F
                 )
-                viewSize = obtainStyledAttributes.getDimensionPixelSize(
-                    R.styleable.RatingView_viewContentSize,
-                    defaultValue
+                tintColor = attributesArray.getColor(
+                    R.styleable.RatingView_tintColor,
+                    context.getColor(android.R.color.white)
                 )
             } finally {
-                obtainStyledAttributes.recycle()
+                attributesArray.recycle()
             }
-
-            text = resources.getString(R.string.space_string, ratingValue.toString())
-            setTextColor(tintColor)
-            textSize = viewSize.toFloat()
-            val resourceId = R.drawable.ic_star
-            val drawable = if (viewSize == 16) context.getDrawable(
-                resourceId
-            ) else context.getDrawable(resourceId, viewSize, viewSize)
-            setCompoundDrawablesWithIntrinsicBounds(
-                null,
-                null,
-                drawable, null
-            )
-            compoundDrawableTintList = ColorStateList.valueOf(tintColor)
-            val padding = resources.getDimensionPixelSize(R.dimen.rating_view_padding)
-            setPadding(padding.times(2), padding, padding.times(2), padding)
+            setRatingValue(ratingValue)
+            setTintColor(tintColor)
         }
     }
 
     fun setRatingValue(ratingValue: Float) {
-        text = resources.getString(R.string.space_string, ratingValue.toString())
+        ratingTextView.text = ratingValue.toString()
     }
 
     fun setTintColor(@ColorInt tintColor: Int) {
-        setTextColor(tintColor)
-        compoundDrawableTintList = ColorStateList.valueOf(tintColor)
+        ratingTextView.setTextColor(tintColor)
+        ratingImageView.imageTintList = ColorStateList.valueOf(tintColor)
     }
 }
