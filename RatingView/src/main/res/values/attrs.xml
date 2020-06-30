@@ -3,6 +3,5 @@
     <declare-styleable name="RatingView">
         <attr name="rating_value" format="float" />
         <attr name="tintColor" format="color" />
-        <attr name="viewContentSize" format="dimension" />
     </declare-styleable>
 </resources>
